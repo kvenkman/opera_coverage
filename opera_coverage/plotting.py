@@ -4,8 +4,8 @@ from rasterio.crs import CRS
 from shapely.geometry import Polygon
 import contextily as cx
 
-# returns filled-in plot or outline of dictionary of polygons (or single polygon) with world map underneath
-def visual(area, aoi, outline = False):
+# returns filled-in plot or outline of dictionary of polygons, single polygon, or dataframe (no outline available) with world map underneath
+def visual(area, aoi: Polygon, outline = False):
     fig, ax = plt.subplots()
     fig.set_size_inches(10, 10)
     
@@ -16,36 +16,35 @@ def visual(area, aoi, outline = False):
         for num,frame in enumerate(area.keys()):
             df = gpd.GeoDataFrame(geometry = [area[frame]],
                                   crs = CRS.from_epsg(4326))
-            df_wm = df.to_crs(epsg = 3857)
             if not outline:
-                df_wm.plot(ax = ax, alpha = .3, color=color[num], legend = True)
+                df.plot(ax = ax, alpha = .3, color=color[num], legend = True)
             else:
-                df_wm.boundary.plot(ax = ax, color=color[num])
+                df.boundary.plot(ax = ax, color=color[num])
             
     elif type(area) == gpd.geodataframe.GeoDataFrame:
         
-        df_wm = area.to_crs(epsg = 3857)
-        if not outline:
-            df_wm.plot(column='sensor', ax = ax, alpha = .3, legend=True)
-        else:
-            df_wm.boundary.plot(column='sensor', ax = ax, legend=True)
+        area.plot(column='sensor', ax = ax, alpha = .3, legend=True)
+        # if not outline:
+        #     df_wm.plot(column='sensor', ax = ax, alpha = .3, legend=True)
+        # else:
+        #     df_wm.boundary.plot(column='sensor', ax = ax, legend=True)
         
     elif type(area) == Polygon:
         
         df = gpd.GeoDataFrame(geometry = [area],
                               crs = CRS.from_epsg(4326))
-        df_wm = df.to_crs(epsg = 3857)
         if not outline:
-            df_wm.plot(ax = ax, alpha = .25)
+            df.plot(ax = ax, alpha = .25)
         else:
-            df_wm.boundary.plot(ax = ax)
+            df.boundary.plot(ax = ax)
     
-    aoi = aoi.to_crs(epsg = 3857)
     aoi.plot(ax=ax)
-    cx.add_basemap(ax, zoom = 10)
+    cx.add_basemap(ax, crs=area.crs, zoom = 10)
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
 
 # returns plot of intersection of all polygons in input dictionary
-def find_overlap(area, outline = False):
+def find_overlap(area, outline = False) -> Polygon:
     
     if type(area) == dict:
         for idx,key in enumerate(area.keys()):
@@ -60,3 +59,4 @@ def find_overlap(area, outline = False):
                 overlap = overlap.intersection(area[i + 1])
             
     visual(overlap, outline)
+    return overlap

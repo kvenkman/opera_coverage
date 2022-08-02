@@ -30,12 +30,6 @@ def get_coverage(sensor: List[str], aoi: Polygon, date: List[datetime] = None) -
             results = s.hls_search('sentinel2', aoi, date)
             df = f.format_results_for_hls(results,'sentinel2')
         
-        try:
-            df = df.dissolve(by='start_date').reset_index()
-            df.drop(['start_date'],inplace=True)
-        except:
-            pass
-        
         dataframes.append(df)
 
         # return cadence as string or list using get_cadence
@@ -48,10 +42,7 @@ def get_coverage(sensor: List[str], aoi: Polygon, date: List[datetime] = None) -
         else:
             next_acq[sensor_name] = 'Time of next acquisition after ' + str(date[1]) + ' is ' + str(s.acq_search(sensor_name.lower(), aoi, date[1]))
         
-        # find area intersection for each sensor
-#         coords = [Polygon(c) for c in coords]
-#         area[sensor_name] = unary_union([a.intersection(b) for a, b in combinations(coords, 2)])
-        
+        # find intersection of acquisitions from each sensor separately
         if len(results) == 0:
             area[sensor_name] = 0
         else:
@@ -61,6 +52,7 @@ def get_coverage(sensor: List[str], aoi: Polygon, date: List[datetime] = None) -
                 
                 for i in range(len(df) - 1):
                     area[sensor_name] = area[sensor_name].intersection(df.geometry[i + 1])
+                    
     master = s.get_sensor_cadence(dataframes)
 
     return freq, next_acq, area, master

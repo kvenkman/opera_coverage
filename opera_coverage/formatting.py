@@ -46,7 +46,7 @@ def format_results_for_sent1(results: list) -> gpd.GeoDataFrame:
     return df
 
 # reformat results from hls_search list to geodataframe
-def format_results_for_hls(results: list, sensor) -> gpd.GeoDataFrame:
+def format_results_for_hls(results: list, sensor: str) -> gpd.GeoDataFrame:
     geometry = [shape(results[r].geometry) for r in range(len(results))]
     data = [results[r].properties for r in range(len(results))]
     # print(len(data))
@@ -82,7 +82,7 @@ def shape2gdf(shape, filename: str) -> gpd.GeoDataFrame:
     return df
 
 # for sensors that have acquisitions less than 5 seconds apart, merge the geometries and regard as one acquisition
-def drop(df):
+def drop(df: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     dfc = dc(df)
     for i in range(len(df) - 1):
         if (df.startTime[i + 1] - df.startTime[i]).seconds < 5:

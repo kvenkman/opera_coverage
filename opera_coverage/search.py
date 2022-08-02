@@ -8,7 +8,7 @@ import pandas as pd
 import geopandas as gpd
 
 # for searching for sentinel2 and landsat8 data
-def hls_search(sensor: str, aoi: Polygon, date: List[datetime] = None):
+def hls_search(sensor: str, aoi: Polygon, date: List[datetime] = None) -> list:
     STAC_URL = 'https://cmr.earthdata.nasa.gov/stac'
     api = Client.open(f'{STAC_URL}/LPCLOUD/')
     
@@ -82,9 +82,6 @@ def acq_search(sensor_name: str, aoi: Polygon, date):
     
     # extract time of next acquisition
     if not df.empty:
-        # try:
-        #     next_acq = df.start_datetime[0]
-        # except:
         next_acq = df.startTime[0]
 
     else:
@@ -93,7 +90,7 @@ def acq_search(sensor_name: str, aoi: Polygon, date):
     return next_acq
 
 # calculate cadence
-def get_cadence(results):
+def get_cadence(results: gpd.GeoDataFrame) -> List(str):
     
     cadence = ''
     if len(results) == 0:
@@ -102,8 +99,6 @@ def get_cadence(results):
     else:
         if len(results) == 1:
             cadence = 'Only one acquisition on ' + str(results.startTime[0])
-            # except:
-            #     cadence = 'Only one acquisition on ' + str(results.start_datetime[0])
 
         else:
             cadence = []
@@ -112,10 +107,9 @@ def get_cadence(results):
         
     return cadence
 
-def get_sensor_cadence(dfs):
+# return dataframe with all sensor acquisitions and their timedeltas
+def get_sensor_cadence(dfs: List(gpd.GeoDataFrame)) -> gpd.GeoDataFrame:
     master = gpd.GeoDataFrame(pd.concat([dfs[0],dfs[1]]))
-    # master = dfs[0].append(dfs[1])
-    # master = master.append(dfs[2])
     for i in range(len(dfs) - 2):
         master = gpd.GeoDataFrame(pd.concat([master,dfs[i + 2]]))
     master.sort_values(by=['startTime'], inplace=True)
