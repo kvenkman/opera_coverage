@@ -13,6 +13,7 @@ def get_coverage(sensor: List[str], aoi: Polygon, date: List[datetime] = None) -
     freq = {}
     next_acq = {}
     area = {}
+    dataframes = []
     
     for sensor_name in sensor:
         freq[sensor_name] = ''
@@ -34,10 +35,9 @@ def get_coverage(sensor: List[str], aoi: Polygon, date: List[datetime] = None) -
             df.drop(['start_date'],inplace=True)
         except:
             pass
-
-#         if df.startTime[0] == df.startTime[1] or df.startTime[-2] == df.startTime[-1]:
-        # df = f.drop(df)
         
+        dataframes.append(df)
+
         # return cadence as string or list using get_cadence
         freq[sensor_name] = s.get_cadence(df)
         
@@ -61,5 +61,6 @@ def get_coverage(sensor: List[str], aoi: Polygon, date: List[datetime] = None) -
                 
                 for i in range(len(df) - 1):
                     area[sensor_name] = area[sensor_name].intersection(df.geometry[i + 1])
-        
-    return freq, next_acq, area
+    master = s.get_sensor_cadence(dataframes)
+
+    return freq, next_acq, area, master

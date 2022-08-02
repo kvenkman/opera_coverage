@@ -80,10 +80,10 @@ def acq_search(sensor_name: str, aoi: Polygon, date):
     
     # extract time of next acquisition
     if not df.empty:
-        try:
-            next_acq = df.start_datetime[0]
-        except:
-            next_acq = df.startTime[0]
+        # try:
+        #     next_acq = df.start_datetime[0]
+        # except:
+        next_acq = df.startTime[0]
 
     else:
         next_acq = 'Search yielded no results'
@@ -99,10 +99,9 @@ def get_cadence(results):
 
     else:
         if len(results) == 1:
-            try:
-                cadence = 'Only one acquisition on ' + results.startTime[0]
-            except:
-                cadence = 'Only one acquisition on ' + results.start_datetime[0]
+            cadence = 'Only one acquisition on ' + str(results.startTime[0])
+            # except:
+            #     cadence = 'Only one acquisition on ' + str(results.start_datetime[0])
 
         else:
             cadence = []
@@ -113,9 +112,11 @@ def get_cadence(results):
 
 def get_sensor_cadence(dfs):
     master = dfs[0].append(dfs[1])
+    # master = master.append(dfs[2])
     for i in range(len(dfs) - 2):
         master = master.append(dfs[i + 2])
-    master.sort_values(by=['startTime'],inplace=True)
-    master.reset_index(drop=True)
+    master.sort_values(by=['startTime'], inplace=True)
+    master['cadence'] = master.startTime.diff()
+    master.reset_index(drop=True,inplace=True)
 
-    return master.sensor.tolist()
+    return master

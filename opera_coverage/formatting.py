@@ -39,7 +39,7 @@ def format_results_for_sent1(results: list) -> gpd.GeoDataFrame:
     # df['start_date_str'] = df.start_date.dt.date.map(str)
     # df['pathNumber'] = df['pathNumber'].astype(int)
     # df = df.sort_values(by=['startTime', 'pathNumber']).reset_index(drop=True)
-    df.drop(columns=['browse','beamModeType','bytes','centerLat','centerLon','faradayRotation','flightDirection','groupID','granuleType','insarStackId','md5sum','offNadirAngle','orbit','pathNumber','platform','pointingAngle','polarization','processingDate','processingLevel','sceneName','url','fileName','frameNumber','stopTime'], inplace=True)
+    # df.drop(columns=['browse','beamModeType','bytes','centerLat','centerLon','faradayRotation','flightDirection','groupID','granuleType','insarStackId','md5sum','offNadirAngle','orbit','pathNumber','platform','pointingAngle','polarization','processingDate','processingLevel','sceneName','url','fileName','frameNumber','stopTime'], inplace=True)
     df = df.sort_values(by=['startTime']).reset_index(drop=True)
     df = df.reindex(columns=['startTime','geometry','sensor','fileID'])
 
@@ -58,13 +58,15 @@ def format_results_for_hls(results: list, sensor) -> gpd.GeoDataFrame:
         warn('Dataframe is empty! Check inputs.')
         return df
     
-    # df = df.drop(['datetime'])
     df['sensor'] = [sensor for i in range(len(df))]
     df['startTime'] = pd.to_datetime(df.start_datetime.replace('Z',''))
-    # df['stopTime'] = pd.to_datetime(df.end_datetime.replace('Z',''))
     df['start_date'] = df.startTime.dt.strftime('%Y%m%d%H')
+    df['fileID'] = [results[i].id for i in range(len(results))]
     df = df.sort_values(by=['startTime']).reset_index(drop=True)
-    df.drop(['datetime','start_datetime','end_datetime'], axis=1, inplace=True)
+    df = df.dissolve(by='start_date')
+    # df.drop(['datetime','start_datetime','end_datetime'], axis=1, inplace=True)
+    df = df.reindex(columns=['startTime','geometry','sensor','fileID'])
+    df = df.dissolve(by='startTime').reset_index()
 
     return df
 

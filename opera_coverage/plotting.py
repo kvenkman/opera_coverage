@@ -26,9 +26,9 @@ def visual(area, outline = False):
         
         df_wm = area.to_crs(epsg = 3857)
         if not outline:
-            df_wm.plot(ax = ax, alpha = .3)
+            df_wm.plot(ax = ax, alpha = .3, legend=True)
         else:
-            df_wm.boundary.plot(ax = ax)
+            df_wm.boundary.plot(ax = ax, legend=True)
         
     elif type(area) == Polygon:
         
