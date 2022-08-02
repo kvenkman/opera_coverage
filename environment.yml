@@ -1,0 +1,16 @@
+name: opera_coverage
+channels:
+ - conda-forge
+ - anaconda
+ - defaults
+dependencies:
+ - geopandas
+ - setuptools
+ - pystac-client
+ - pandas
+ - numpy
+ - matplotlib
+ - rasterio
+ - jupyter
+ - asf_search
+ - contextily
