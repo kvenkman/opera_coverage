@@ -4,6 +4,8 @@ from datetime import datetime, timedelta
 from pystac_client import Client
 from . import formatting as f
 import asf_search as asf
+import pandas as pd
+import geopandas as gpd
 
 # for searching for sentinel2 and landsat8 data
 def hls_search(sensor: str, aoi: Polygon, date: List[datetime] = None):
@@ -111,10 +113,11 @@ def get_cadence(results):
     return cadence
 
 def get_sensor_cadence(dfs):
-    master = dfs[0].append(dfs[1])
+    master = gpd.GeoDataFrame(pd.concat([dfs[0],dfs[1]]))
+    # master = dfs[0].append(dfs[1])
     # master = master.append(dfs[2])
     for i in range(len(dfs) - 2):
-        master = master.append(dfs[i + 2])
+        master = gpd.GeoDataFrame(pd.concat([master,dfs[i + 2]]))
     master.sort_values(by=['startTime'], inplace=True)
     master['cadence'] = master.startTime.diff()
     master.reset_index(drop=True,inplace=True)
