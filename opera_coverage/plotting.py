@@ -5,7 +5,7 @@ from shapely.geometry import Polygon
 import contextily as cx
 
 # returns filled-in plot or outline of dictionary of polygons (or single polygon) with world map underneath
-def visual(area, outline = False):
+def visual(area, aoi, outline = False):
     fig, ax = plt.subplots()
     fig.set_size_inches(10, 10)
     
@@ -22,13 +22,13 @@ def visual(area, outline = False):
             else:
                 df_wm.boundary.plot(ax = ax, color=color[num])
             
-    elif type(area) == gpd.GeoSeries:
+    elif type(area) == gpd.geodataframe.GeoDataFrame:
         
         df_wm = area.to_crs(epsg = 3857)
         if not outline:
-            df_wm.plot(ax = ax, alpha = .3, legend=True)
+            df_wm.plot(column='sensor', ax = ax, alpha = .3, legend=True)
         else:
-            df_wm.boundary.plot(ax = ax, legend=True)
+            df_wm.boundary.plot(column='sensor', ax = ax, legend=True)
         
     elif type(area) == Polygon:
         
@@ -36,10 +36,12 @@ def visual(area, outline = False):
                               crs = CRS.from_epsg(4326))
         df_wm = df.to_crs(epsg = 3857)
         if not outline:
-            df_wm.plot(ax = ax, alpha = .3)
+            df_wm.plot(ax = ax, alpha = .25)
         else:
             df_wm.boundary.plot(ax = ax)
     
+    aoi = aoi.to_crs(epsg = 3857)
+    aoi.plot(ax=ax)
     cx.add_basemap(ax, zoom = 10)
 
 # returns plot of intersection of all polygons in input dictionary
