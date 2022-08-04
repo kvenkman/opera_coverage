@@ -26,7 +26,7 @@ def hls_search(sensor: str, aoi: Polygon, date: List[datetime] = None) -> list:
     
     search_params = {
         "collections": hls_collections,
-        "bbox": [x[0],y[0],x[1],y[1]], # list of xmin, ymin, xmax, ymax
+        "bbox": [min(x),min(y),max(x),max(y)], # list of xmin, ymin, xmax, ymax
         "datetime": search_datetime,
     }
     search_hls = api.search(**search_params)
@@ -58,7 +58,7 @@ def asf_search(aoi: Polygon, date: datetime = None):
     return results
 
 # find next acquisition date
-def acq_search(sensor_name: str, aoi: Polygon, date):
+def acq_search(sensor_name: str, aoi: Polygon, date: datetime):
     
     # put arbitrary hard stop at 3 searches (15 days)
     for rep in range(3):
@@ -90,7 +90,7 @@ def acq_search(sensor_name: str, aoi: Polygon, date):
     return next_acq
 
 # calculate cadence
-def get_cadence(results: gpd.GeoDataFrame) -> List(str):
+def get_cadence(results: gpd.GeoDataFrame):
     
     cadence = ''
     if len(results) == 0:
@@ -108,7 +108,7 @@ def get_cadence(results: gpd.GeoDataFrame) -> List(str):
     return cadence
 
 # return dataframe with all sensor acquisitions and their timedeltas
-def get_sensor_cadence(dfs: List(gpd.GeoDataFrame)) -> gpd.GeoDataFrame:
+def get_sensor_cadence(dfs: List[gpd.GeoDataFrame]) -> gpd.GeoDataFrame:
     master = gpd.GeoDataFrame(pd.concat([dfs[0],dfs[1]]))
     for i in range(len(dfs) - 2):
         master = gpd.GeoDataFrame(pd.concat([master,dfs[i + 2]]))

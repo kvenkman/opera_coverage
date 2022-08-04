@@ -60,3 +60,20 @@ def find_overlap(area, outline = False) -> Polygon:
             
     visual(overlap, outline)
     return overlap
+
+def heatmap(value, long_block, lat_block):
+    fig, ax = plt.subplots()
+    im = ax.imshow(value)
+
+    cbar = ax.figure.colorbar(im, ax=ax)
+    cbar.ax.set_ylabel('Acquisitions', rotation=-90, va="bottom")
+
+    # Loop over data dimensions and create text annotations.
+    for i in range(len(lat_block)- 1):
+        for j in range(len(long_block) - 1):
+            text = ax.text(j, i, value[i, j],
+                        ha="center", va="center", color="w")
+
+    ax.set_title("Global temporal coverage")
+    fig.tight_layout()
+    plt.show()
