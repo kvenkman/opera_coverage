@@ -65,6 +65,8 @@ def heatmap(value, long_block, lat_block):
     fig, ax = plt.subplots()
     im = ax.imshow(value)
 
+    # x_tick = 
+
     cbar = ax.figure.colorbar(im, ax=ax)
     cbar.ax.set_ylabel('Acquisitions', rotation=-90, va="bottom")
 

@@ -29,7 +29,7 @@ def format_results_for_sent1(results: list) -> gpd.GeoDataFrame:
     df = gpd.GeoDataFrame(df, geometry=geometry, crs=CRS.from_epsg(4326))
 
     if df.empty:
-        warn('Dataframe is empty! Check inputs.')
+        warn('Sentinel-1 dataframe is empty! Check inputs.')
         return df
 
     df['sensor'] = ['sentinel1' for i in range(len(df))]
@@ -55,7 +55,10 @@ def format_results_for_hls(results: list, sensor: str) -> gpd.GeoDataFrame:
     df = gpd.GeoDataFrame(df, geometry=geometry, crs=CRS.from_epsg(4326))
 
     if df.empty:
-        warn('Dataframe is empty! Check inputs.')
+        if 'sentinel2' in sensor.lower():
+            warn('Sentinel-2 dataframe is empty! Check inputs.')
+        elif 'landsat8' in sensor.lower():
+            warn('Landsat-8 dataframe is empty! Check inputs.')
         return df
     
     df['sensor'] = [sensor for i in range(len(df))]
@@ -71,13 +74,14 @@ def format_results_for_hls(results: list, sensor: str) -> gpd.GeoDataFrame:
     return df
 
 # convert a shapely object (point or polygon) to geodataframe
-def shape2gdf(shape, filename: str) -> gpd.GeoDataFrame:
+def shape2gdf(shape, filename = None, to_file = True) -> gpd.GeoDataFrame:
     data = {}
     data['coordinates'] = [shape.wkt]
     data['coordinates'] = gpd.GeoSeries.from_wkt(data['coordinates'])
     df = pd.DataFrame(data)
     df = gpd.GeoDataFrame(df, geometry = 'coordinates', crs=CRS.from_epsg(4326))
-    df.to_file(filename + '.geojson',driver='GeoJSON')
+    if to_file:
+        df.to_file(filename + '.geojson',driver='GeoJSON')
     
     return df
 
