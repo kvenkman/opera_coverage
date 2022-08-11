@@ -4,8 +4,14 @@ from rasterio.crs import CRS
 from shapely.geometry import Polygon
 import contextily as cx
 
-# returns filled-in plot or outline of dictionary of polygons, single polygon, or dataframe (no outline available) with world map underneath
 def visual(area, aoi: Polygon, outline = False):
+    """returns filled-in plot or outline of dictionary of polygons, single polygon, or dataframe (no outline available) with world map underneath
+
+    Args:
+        area (can be dictionary or GeoDataFrame or Polygon): Sensor acquisition geometry
+        aoi (Polygon): area of interest that was used as search criteria for 'area'
+        outline (bool, optional): Can choose to have acquisition geometries displayed as just the outline. Defaults to False.
+    """
     fig, ax = plt.subplots()
     fig.set_size_inches(10, 10)
     
@@ -43,8 +49,16 @@ def visual(area, aoi: Polygon, outline = False):
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
 
-# returns plot of intersection of all polygons in input dictionary
 def find_overlap(area, outline = False) -> Polygon:
+    """Returns plot of intersection of all polygons in input dictionary
+
+    Args:
+        area (can be dictionary or gpd.GeoSeries): list of acquisition geometries
+        outline (bool, optional): Can choose to have acquisition geometries displayed as just the outline. Defaults to False.
+
+    Returns:
+        Polygon: intersection of all acquisition geometries
+    """
     
     if type(area) == dict:
         for idx,key in enumerate(area.keys()):
@@ -61,21 +75,21 @@ def find_overlap(area, outline = False) -> Polygon:
     visual(overlap, outline)
     return overlap
 
-def heatmap(value, long_block, lat_block):
-    fig, ax = plt.subplots()
-    im = ax.imshow(value)
+# def heatmap(value, long_block, lat_block):
+#     fig, ax = plt.subplots()
+#     im = ax.imshow(value)
 
-    # x_tick = 
+#     # x_tick = 
 
-    cbar = ax.figure.colorbar(im, ax=ax)
-    cbar.ax.set_ylabel('Acquisitions', rotation=-90, va="bottom")
+#     cbar = ax.figure.colorbar(im, ax=ax)
+#     cbar.ax.set_ylabel('Acquisitions', rotation=-90, va="bottom")
 
-    # Loop over data dimensions and create text annotations.
-    for i in range(len(lat_block)- 1):
-        for j in range(len(long_block) - 1):
-            text = ax.text(j, i, value[i, j],
-                        ha="center", va="center", color="w")
+#     # Loop over data dimensions and create text annotations.
+#     for i in range(len(lat_block)- 1):
+#         for j in range(len(long_block) - 1):
+#             text = ax.text(j, i, value[i, j],
+#                         ha="center", va="center", color="w")
 
-    ax.set_title("Global temporal coverage")
-    fig.tight_layout()
-    plt.show()
+#     ax.set_title("Global temporal coverage")
+#     fig.tight_layout()
+#     plt.show()

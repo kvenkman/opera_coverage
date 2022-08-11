@@ -35,11 +35,6 @@ def format_results_for_sent1(results: list) -> gpd.GeoDataFrame:
     df['sensor'] = ['sentinel1' for i in range(len(df))]
     df['startTime'] = pd.to_datetime(df.startTime).dt.tz_convert('UTC')
     df['stopTime'] = pd.to_datetime(df.stopTime).dt.tz_convert('UTC')
-    # df['start_date'] = pd.to_datetime(df.startTime.dt.date)
-    # df['start_date_str'] = df.start_date.dt.date.map(str)
-    # df['pathNumber'] = df['pathNumber'].astype(int)
-    # df = df.sort_values(by=['startTime', 'pathNumber']).reset_index(drop=True)
-    # df.drop(columns=['browse','beamModeType','bytes','centerLat','centerLon','faradayRotation','flightDirection','groupID','granuleType','insarStackId','md5sum','offNadirAngle','orbit','pathNumber','platform','pointingAngle','polarization','processingDate','processingLevel','sceneName','url','fileName','frameNumber','stopTime'], inplace=True)
     df = df.sort_values(by=['startTime']).reset_index(drop=True)
     df = df.reindex(columns=['startTime','geometry','sensor','fileID'])
 
@@ -67,7 +62,6 @@ def format_results_for_hls(results: list, sensor: str) -> gpd.GeoDataFrame:
     df['fileID'] = [results[i].id for i in range(len(results))]
     df = df.sort_values(by=['startTime']).reset_index(drop=True)
     df = df.dissolve(by='start_date')
-    # df.drop(['datetime','start_datetime','end_datetime'], axis=1, inplace=True)
     df = df.reindex(columns=['startTime','geometry','sensor','fileID'])
     df = df.dissolve(by='startTime').reset_index()
 
