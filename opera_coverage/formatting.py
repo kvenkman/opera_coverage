@@ -32,10 +32,19 @@ def format_results_for_sent1(results: list) -> gpd.GeoDataFrame:
         warn('Sentinel-1 dataframe is empty! Check inputs.')
         return df
 
-    df['sensor'] = ['sentinel1' for i in range(len(df))]
     df['startTime'] = pd.to_datetime(df.startTime).dt.tz_convert('UTC')
     df['stopTime'] = pd.to_datetime(df.stopTime).dt.tz_convert('UTC')
     df = df.sort_values(by=['startTime']).reset_index(drop=True)
+    df['new_start_date'] = df.startTime.dt.strftime('%Y%m%d%H')
+    df['new_start_date'] = df.apply(lambda row: row['new_start_date'] + '_' + str(row['pathNumber']), axis=1)
+
+    new_start_time = [sorted(df[df.new_start_date == i].startTime)[0] for i in df.new_start_date.unique()]
+    new_geometry = [df[df.new_start_date==i].geometry.unary_union for i in df.new_start_date.unique()]
+    new_fileids = [','.join(df[df.new_start_date==i].fileID) for i in df.new_start_date.unique()]
+    df = {'startTime':new_start_time, 'fileID':new_fileids}
+    df['sensor'] = 'sentinel1'
+    df = pd.DataFrame(data = df)
+    df = gpd.GeoDataFrame(df, geometry=new_geometry, crs=CRS.from_epsg(4326))
     df = df.reindex(columns=['startTime','geometry','sensor','fileID'])
 
     return df
@@ -44,7 +53,6 @@ def format_results_for_sent1(results: list) -> gpd.GeoDataFrame:
 def format_results_for_hls(results: list, sensor: str) -> gpd.GeoDataFrame:
     geometry = [shape(results[r].geometry) for r in range(len(results))]
     data = [results[r].properties for r in range(len(results))]
-    # print(len(data))
 
     df = pd.DataFrame(data)
     df = gpd.GeoDataFrame(df, geometry=geometry, crs=CRS.from_epsg(4326))
@@ -56,14 +64,19 @@ def format_results_for_hls(results: list, sensor: str) -> gpd.GeoDataFrame:
             warn('Landsat-8 dataframe is empty! Check inputs.')
         return df
     
-    df['sensor'] = [sensor for i in range(len(df))]
     df['startTime'] = pd.to_datetime(df.start_datetime.replace('Z',''))
-    df['start_date'] = df.startTime.dt.strftime('%Y%m%d%H')
     df['fileID'] = [results[i].id for i in range(len(results))]
     df = df.sort_values(by=['startTime']).reset_index(drop=True)
-    df = df.dissolve(by='start_date')
+    df['new_start_date'] = df.startTime.dt.strftime('%Y%m%d%H')
+
+    new_start_time = [sorted(df[df.new_start_date == i].startTime)[0] for i in df.new_start_date.unique()]
+    new_geometry = [df[df.new_start_date==i].geometry.unary_union for i in df.new_start_date.unique()]
+    new_fileids = [','.join(df[df.new_start_date==i].fileID) for i in df.new_start_date.unique()]
+    df = {'startTime':new_start_time, 'fileID':new_fileids}
+    df['sensor'] = sensor
+    df = pd.DataFrame(data = df)
+    df = gpd.GeoDataFrame(df, geometry=new_geometry, crs=CRS.from_epsg(4326))
     df = df.reindex(columns=['startTime','geometry','sensor','fileID'])
-    df = df.dissolve(by='startTime').reset_index()
 
     return df
 
